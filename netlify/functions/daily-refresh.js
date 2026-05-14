@@ -1,8 +1,13 @@
-const { getStore } = require('@netlify/blobs');
+const { getStore, configure } = require('@netlify/blobs');
 
 const STORE_DOMAIN = process.env.SHOPIFY_STORE;
 const ACCESS_TOKEN = process.env.SHOPIFY_ACCESS_TOKEN;
 const LOCATION_NAMES = ['Edinburgh', 'Warrington', 'Milton Keynes', 'Southampton'];
+
+configure({
+  siteID: process.env.NETLIFY_SITE_ID,
+  token: process.env.NETLIFY_TOKEN,
+});
 
 async function shopifyGet(path) {
   const res = await fetch(`https://${STORE_DOMAIN}/admin/api/2024-01/${path}`, {
