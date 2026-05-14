@@ -9,6 +9,5 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-[[functions]]
-  name = "daily-refresh"
+[functions."daily-refresh"]
   schedule = "0 8 * * *"
