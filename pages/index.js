@@ -8,12 +8,15 @@ const RANKS = [
   { badge: '#1e4a1e', badgeText: '#fff', border: 'rgba(255,255,255,0.08)', glow: 'none' },
 ];
 
-function formatRevenue(amount) {
-  return '£' + Math.round(amount).toLocaleString('en-GB');
+function getMondayOfWeek(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(d.setDate(diff));
 }
 
 function formatWeekRange(dateStr) {
-  const monday = new Date(dateStr);
+  const monday = getMondayOfWeek(dateStr);
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
   const opts = { day: 'numeric', month: 'short' };
@@ -26,15 +29,15 @@ function formatUpdated(dateStr) {
   });
 }
 
-export default function SalesLeaderboard({ data }) {
+export default function Leaderboard({ data }) {
   const sorted = data
-    ? [...data.locations].sort((a, b) => b.revenue - a.revenue)
+    ? [...data.locations].sort((a, b) => b.weekly - a.weekly)
     : [];
 
   return (
     <>
       <Head>
-        <title>GC4C Sales Leaderboard</title>
+        <title>GC4C Weekly Listings</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -54,7 +57,7 @@ export default function SalesLeaderboard({ data }) {
         <div style={{ maxWidth: '680px', margin: '0 auto' }}>
 
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <div style={{ fontSize: '36px', lineHeight: 1, marginBottom: '8px' }}>💰</div>
+            <div style={{ fontSize: '36px', lineHeight: 1, marginBottom: '8px' }}>🏆</div>
             <h1 style={{
               fontSize: '20px',
               fontWeight: 900,
@@ -63,7 +66,7 @@ export default function SalesLeaderboard({ data }) {
               margin: 0,
               color: '#ffffff',
             }}>
-              Sales Leaderboard
+              Weekly Listings
             </h1>
             {data && (
               <p style={{
@@ -72,7 +75,7 @@ export default function SalesLeaderboard({ data }) {
                 color: '#6dab6d',
                 letterSpacing: '0.03em',
               }}>
-                Week of {formatWeekRange(data.weekStart)}
+                Week of {formatWeekRange(data.updated)}
               </p>
             )}
           </div>
@@ -125,19 +128,39 @@ export default function SalesLeaderboard({ data }) {
                       </div>
                     </div>
 
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{
-                        fontSize: '10px',
-                        fontWeight: 600,
-                        color: '#6dab6d',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.1em',
-                        marginBottom: '4px',
-                      }}>
-                        This Week
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{
+                          fontSize: '10px',
+                          fontWeight: 600,
+                          color: '#6dab6d',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          marginBottom: '4px',
+                        }}>
+                          This Week
+                        </div>
+                        <div style={{ fontSize: '30px', fontWeight: 900, lineHeight: 1, color: '#ffffff' }}>
+                          {loc.weekly.toLocaleString()}
+                        </div>
                       </div>
-                      <div style={{ fontSize: '30px', fontWeight: 900, lineHeight: 1, color: '#ffffff' }}>
-                        {formatRevenue(loc.revenue)}
+
+                      <div style={{ width: '1px', height: '44px', backgroundColor: '#2d5a2d' }} />
+
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{
+                          fontSize: '10px',
+                          fontWeight: 600,
+                          color: '#6dab6d',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          marginBottom: '4px',
+                        }}>
+                          Today
+                        </div>
+                        <div style={{ fontSize: '30px', fontWeight: 900, lineHeight: 1, color: '#ffffff' }}>
+                          {loc.daily.toLocaleString()}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -151,7 +174,42 @@ export default function SalesLeaderboard({ data }) {
               padding: '60px 20px',
               fontSize: '14px',
             }}>
-              No data yet — check back after the first update.
+              No data yet — check back after the first automated update.
+            </div>
+          )}
+
+          {data && (
+            <div style={{
+              backgroundColor: '#0d2318',
+              borderRadius: '14px',
+              padding: '18px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              marginTop: '10px',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              <div style={{ flex: 1, fontWeight: 800, fontSize: '17px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Company Total
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: '#6dab6d', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+                    This Week
+                  </div>
+                  <div style={{ fontSize: '30px', fontWeight: 900, lineHeight: 1, color: '#ffffff' }}>
+                    {sorted.reduce((sum, loc) => sum + loc.weekly, 0).toLocaleString()}
+                  </div>
+                </div>
+                <div style={{ width: '1px', height: '44px', backgroundColor: '#2d5a2d' }} />
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: '#6dab6d', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+                    Today
+                  </div>
+                  <div style={{ fontSize: '30px', fontWeight: 900, lineHeight: 1, color: '#ffffff' }}>
+                    {sorted.reduce((sum, loc) => sum + loc.daily, 0).toLocaleString()}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -173,17 +231,9 @@ export default function SalesLeaderboard({ data }) {
   );
 }
 
-export async function getServerSideProps({ query }) {
-  if (query.shop && query.hmac) {
-    const redirectUri = 'https://gc4csalesleaderboard.netlify.app/api/auth/callback';
-    const scopes = 'read_orders,read_locations';
-    const clientId = process.env.SHOPIFY_CLIENT_ID;
-    const oauthUrl = `https://${query.shop}/admin/oauth/authorize?client_id=${clientId}&scope=${scopes}&redirect_uri=${encodeURIComponent(redirectUri)}&state=nonce123`;
-    return { redirect: { destination: oauthUrl, permanent: false } };
-  }
-
+export async function getServerSideProps() {
   try {
-    const store = getStore('sales-leaderboard');
+    const store = getStore('leaderboard');
     const data = await store.get('current', { type: 'json' });
     return { props: { data: data || null } };
   } catch {
