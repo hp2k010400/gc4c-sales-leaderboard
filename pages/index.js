@@ -173,7 +173,15 @@ export default function SalesLeaderboard({ data }) {
   );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ query }) {
+  if (query.shop && query.hmac) {
+    const redirectUri = 'https://gc4csalesleaderboard.netlify.app/api/auth/callback';
+    const scopes = 'read_orders,read_locations';
+    const clientId = process.env.SHOPIFY_CLIENT_ID;
+    const oauthUrl = `https://${query.shop}/admin/oauth/authorize?client_id=${clientId}&scope=${scopes}&redirect_uri=${encodeURIComponent(redirectUri)}&state=nonce123`;
+    return { redirect: { destination: oauthUrl, permanent: false } };
+  }
+
   try {
     const store = getStore('sales-leaderboard');
     const data = await store.get('current', { type: 'json' });
